@@ -1,4 +1,7 @@
-﻿using MAB.DotIgnore;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using MAB.DotIgnore;
 
 namespace Contract.Renamer
 {

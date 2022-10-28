@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using MAB.DotIgnore;
 
 namespace Contract.Renamer
@@ -33,7 +36,6 @@ namespace Contract.Renamer
             foreach (var item in di.GetFileSystemInfos())
             {
                 var subdir = item as DirectoryInfo;
-
                 if (subdir != null &&
                     !ignores.Any(ignore =>
                         !string.IsNullOrWhiteSpace(subdir.FullName.Replace(ignore.Key, "")) &&

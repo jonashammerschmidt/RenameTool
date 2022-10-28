@@ -20,7 +20,7 @@ namespace Contract.Renamer
 
         public static string LowerFirstChar(this string text)
         {
-            return char.ToLower(text[0]) + text.Substring(1);
+            return char.ToLower(text[0]) + text[1..];
         }
     }
 }
