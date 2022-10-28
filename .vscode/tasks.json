@@ -1,0 +1,73 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Pack and Install",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "Tasks - Pack",
+                "Tasks - Uninstall",
+                "Tasks - Install",
+            ],
+        },
+        {
+            "label": "Tasks - Pack",
+            "type": "shell",
+            "windows": {
+                "command": "dotnet pack"
+            },
+        },
+        {
+            "label": "Tasks - Uninstall",
+            "type": "shell",
+            "windows": {
+                "command": "dotnet tool uninstall --global RenameTool"
+            },
+        },
+        {
+            "label": "Tasks - Install",
+            "type": "shell",
+            "windows": {
+                "command": "dotnet tool install --global --add-source .\\bin\\Debug RenameTool"
+            },
+        },
+        {
+            "label": "build",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/RenameTool.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "publish",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "publish",
+                "${workspaceFolder}/RenameTool.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "watch",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "watch",
+                "run",
+                "--project",
+                "${workspaceFolder}/RenameTool.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+    ]
+}
