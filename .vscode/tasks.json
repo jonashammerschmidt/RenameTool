@@ -16,7 +16,7 @@
             "label": "Tasks - Pack",
             "type": "shell",
             "windows": {
-                "command": "dotnet pack"
+                "command": "dotnet pack -c Release"
             },
         },
         {
@@ -30,7 +30,7 @@
             "label": "Tasks - Install",
             "type": "shell",
             "windows": {
-                "command": "dotnet tool install --global --add-source .\\bin\\Debug RenameTool"
+                "command": "dotnet tool install --global --add-source .\\bin\\Release RenameTool"
             },
         },
         {

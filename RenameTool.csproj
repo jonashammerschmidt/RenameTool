@@ -1,12 +1,20 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <PackageId>RenameTool</PackageId>
+    <Title>RenameTool</Title>
+    <Summary>DotNet Tool for recursively renaming directories, files and file contents in PascalCase, camelCase and kebab-case.</Summary>
+    <Description>DotNet Tool for recursively renaming directories, files and file contents in PascalCase, camelCase and kebab-case.</Description>
+    <Authors>Jonas Hammerschmidt</Authors>
+    <ToolCommandName>RenameTool</ToolCommandName>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/jonashammerschmidt/RenameTool</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/jonashammerschmidt/RenameTool/blob/master/LICENCE</PackageProjectUrl>
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PackAsTool>true</PackAsTool>
-    <ToolCommandName>RenameTool</ToolCommandName>
   </PropertyGroup>
 
   <ItemGroup>
