@@ -1,14 +1,10 @@
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using MAB.DotIgnore;
 using RenameTool.Tools;
 
 namespace RenameTool
 {
     public static class DirectoryAndFileRenamer
     {
-        public static void RenameDirectoryTree(string path, string oldFileName, string newFileName, GitIgnoreTracker gitIgnoreTracker)
+        public static void Rename(string path, string oldFileName, string newFileName, GitIgnoreTracker gitIgnoreTracker)
         {
             var di = new DirectoryInfo(path);
             RenameDirectoryTree(di, oldFileName, newFileName, gitIgnoreTracker);
