@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using MAB.DotIgnore;
 
-namespace Contract.Renamer
+namespace RenameTool
 {
     public static class DirectoryAndFileRenamer
     {

@@ -1,7 +1,7 @@
 ﻿using CaseExtensions;
 using MAB.DotIgnore;
 
-namespace Contract.Renamer
+namespace RenameTool
 {
     public class Program
     {
