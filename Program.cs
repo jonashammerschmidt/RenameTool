@@ -1,5 +1,4 @@
 ﻿using CaseExtensions;
-using MAB.DotIgnore;
 using RenameTool.Tools;
 
 namespace RenameTool
@@ -8,33 +7,26 @@ namespace RenameTool
     {
         static void Main(string[] args)
         {
+            if (args == null || args.Length != 2)
+            {
+                HelpCommand.WriteHelp();
+                return;
+            }
+
             string folder = Directory.GetCurrentDirectory();
             string oldFileName = args[0];
             string newFileName = args[1];
 
-            var gitIgnoreTracker = new GitIgnoreTracker();
-
-            Rename(folder, oldFileName.ToPascalCase(), newFileName.ToPascalCase(), gitIgnoreTracker);
-            Rename(folder, oldFileName.ToCamelCase(), newFileName.ToCamelCase(), gitIgnoreTracker);
-            Rename(folder, oldFileName.ToKebabCase(), newFileName.ToKebabCase(), gitIgnoreTracker);
+            Rename(folder, oldFileName.ToPascalCase(), newFileName.ToPascalCase());
+            Rename(folder, oldFileName.ToCamelCase(), newFileName.ToCamelCase());
+            Rename(folder, oldFileName.ToKebabCase(), newFileName.ToKebabCase());
         }
 
-        private static void Rename(string folder, string oldFileName, string newFileName, GitIgnoreTracker gitIgnoreTracker)
+        private static void Rename(string folder, string oldFileName, string newFileName)
         {
-            DirectoryAndFileRenamer.RenameDirectoryTree(folder, oldFileName, newFileName, gitIgnoreTracker);
-
-            foreach (var file in Directory.GetFiles(folder, "*", SearchOption.AllDirectories))
-            {
-                if (!gitIgnoreTracker.IsFileIgnored(file))
-                {
-                    var contents = File.ReadAllText(file);
-                    var newContent = contents.Replace(oldFileName, newFileName);
-                    if (contents != newContent)
-                    {
-                        File.WriteAllText(file, newContent);
-                    }
-                }
-            }
+            var gitIgnoreTracker = new GitIgnoreTracker();
+            FileContentRenamer.Rename(folder, oldFileName, newFileName, gitIgnoreTracker);
+            DirectoryAndFileRenamer.Rename(folder, oldFileName, newFileName, gitIgnoreTracker);
         }
     }
 }
