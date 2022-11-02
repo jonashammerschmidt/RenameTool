@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using CaseExtensions;
 using MAB.DotIgnore;
 
 namespace Contract.Renamer
@@ -10,13 +8,14 @@ namespace Contract.Renamer
         static void Main(string[] args)
         {
             string folder = Directory.GetCurrentDirectory();
-            string oldFileName = CaseChanger.ToPascalCase(args[0]);
-            string newFileName = CaseChanger.ToPascalCase(args[1]);
+            string oldFileName = args[0];
+            string newFileName = args[1];
+
             Dictionary<string, IgnoreList> ignores = GetIgnoreLists();
 
-            Rename(folder, oldFileName, newFileName, ignores);
-            Rename(folder, oldFileName.LowerFirstChar(), newFileName.LowerFirstChar(), ignores);
-            Rename(folder, oldFileName.PascalToKebabCase(), newFileName.PascalToKebabCase(), ignores);
+            Rename(folder, oldFileName.ToPascalCase(), newFileName.ToPascalCase(), ignores);
+            Rename(folder, oldFileName.ToCamelCase(), newFileName.ToCamelCase(), ignores);
+            Rename(folder, oldFileName.ToKebabCase(), newFileName.ToKebabCase(), ignores);
         }
 
         private static void Rename(string folder, string oldFileName, string newFileName, Dictionary<string, IgnoreList> ignores)
