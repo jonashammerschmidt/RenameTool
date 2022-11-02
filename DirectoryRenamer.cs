@@ -2,50 +2,46 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using MAB.DotIgnore;
+using RenameTool.Tools;
 
 namespace RenameTool
 {
     public static class DirectoryAndFileRenamer
     {
-        public static void RenameDirectoryTree(string path, string oldFileName, string newFileName, Dictionary<string, IgnoreList> ignores)
+        public static void RenameDirectoryTree(string path, string oldFileName, string newFileName, GitIgnoreTracker gitIgnoreTracker)
         {
             var di = new DirectoryInfo(path);
-            RenameDirectoryTree(di, oldFileName, newFileName, ignores);
+            RenameDirectoryTree(di, oldFileName, newFileName, gitIgnoreTracker);
         }
 
-        public static void RenameDirectoryTree(DirectoryInfo directory, string oldFileName, string newFileName, Dictionary<string, IgnoreList> ignores)
+        public static void RenameDirectoryTree(DirectoryInfo directory, string oldFileName, string newFileName, GitIgnoreTracker gitIgnoreTracker)
         {
-            InternalRenameDirectoryTree(directory, oldFileName, newFileName, ignores);
+            InternalRenameDirectoryTree(directory, oldFileName, newFileName, gitIgnoreTracker);
 
-            if (!ignores.Any(ignore =>
-                    !string.IsNullOrWhiteSpace(directory.FullName.Replace(ignore.Key, "")) &&
-                    ignore.Value.IsIgnored(directory.FullName.Replace(ignore.Key, ""), true)))
+            if (!gitIgnoreTracker.IsDirectoryIgnored(directory.FullName))
             {
                 var currentName = directory.Name;
                 var newName = currentName.Replace(oldFileName, newFileName);
                 if (currentName != newName)
                 {
-                    var newDirname = Path.Combine(directory.Parent.FullName, newName);
+                    var newDirname = Path.Combine(directory.Parent!.FullName, newName);
                     directory.MoveTo(newDirname);
                 }
             }
         }
 
-        static void InternalRenameDirectoryTree(DirectoryInfo di, string oldFileName, string newFileName, Dictionary<string, IgnoreList> ignores)
+        static void InternalRenameDirectoryTree(DirectoryInfo di, string oldFileName, string newFileName, GitIgnoreTracker gitIgnoreTracker)
         {
             foreach (var item in di.GetFileSystemInfos())
             {
                 var subdir = item as DirectoryInfo;
-                if (subdir != null &&
-                    !ignores.Any(ignore =>
-                        !string.IsNullOrWhiteSpace(subdir.FullName.Replace(ignore.Key, "")) &&
-                        ignore.Value.IsIgnored(subdir.FullName.Replace(ignore.Key, ""), true)))
+                if (subdir != null && !gitIgnoreTracker.IsDirectoryIgnored(subdir.FullName))
                 {
-                    InternalRenameDirectoryTree(subdir, oldFileName, newFileName, ignores);
+                    InternalRenameDirectoryTree(subdir, oldFileName, newFileName, gitIgnoreTracker);
 
                     var currentName = subdir.Name;
                     var newName = currentName.Replace(oldFileName, newFileName);
-                    if (currentName != newName)
+                    if (currentName != newName && subdir.Parent is not null)
                     {
                         var newDirname = Path.Combine(subdir.Parent.FullName, newName);
                         subdir.MoveTo(newDirname);
@@ -53,11 +49,11 @@ namespace RenameTool
                 }
 
                 var file = item as FileInfo;
-                if (file != null && !ignores.Any(ignore => ignore.Value.IsIgnored(file.FullName.Replace(ignore.Key, ""), true)))
+                if (file != null && !gitIgnoreTracker.IsFileIgnored(file.FullName))
                 {
                     var currentName = Path.GetFileNameWithoutExtension(file.Name);
                     var newName = currentName.Replace(oldFileName, newFileName);
-                    if (currentName != newName)
+                    if (currentName != newName && file.DirectoryName is not null)
                     {
                         var newFilename = Path.Combine(file.DirectoryName, newName + file.Extension);
                         file.MoveTo(newFilename);
