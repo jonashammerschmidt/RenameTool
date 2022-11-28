@@ -12,7 +12,7 @@ internal class HelpCommand
         public static void WriteHelp()
         {
             WriteLogo();
-            Console.WriteLine("Commands:\n RenameTool <search> <replace>\n");
+            Console.WriteLine("Commands:\n RenameTool <search> <replace> [-c|--custom]\n");
         }
 
         private static void WriteLogo()

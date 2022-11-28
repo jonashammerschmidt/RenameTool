@@ -7,7 +7,7 @@ namespace RenameTool
     {
         static void Main(string[] args)
         {
-            if (args == null || args.Length != 2)
+            if (args.Length < 2)
             {
                 HelpCommand.WriteHelp();
                 return;
@@ -17,9 +17,16 @@ namespace RenameTool
             string oldFileName = args[0];
             string newFileName = args[1];
 
-            Rename(folder, oldFileName.ToPascalCase(), newFileName.ToPascalCase());
-            Rename(folder, oldFileName.ToCamelCase(), newFileName.ToCamelCase());
-            Rename(folder, oldFileName.ToKebabCase(), newFileName.ToKebabCase());
+            if (ArgumentParser.HasArgument(args, "-c", "--custom"))
+            {
+                Rename(folder, oldFileName, newFileName);
+            }
+            else
+            {
+                Rename(folder, oldFileName.ToPascalCase(), newFileName.ToPascalCase());
+                Rename(folder, oldFileName.ToCamelCase(), newFileName.ToCamelCase());
+                Rename(folder, oldFileName.ToKebabCase(), newFileName.ToKebabCase());
+            }
         }
 
         private static void Rename(string folder, string oldFileName, string newFileName)
