@@ -4,20 +4,25 @@ namespace RenameTool
 {
     public static class FileContentRenamer
     {
-        public static void Rename(string folder, string oldFileName, string newFileName, GitIgnoreTracker gitIgnoreTracker)
+        public static void Rename(string[] files, string[] findStrings, string[] replaceStrings)
         {
-            foreach (var file in Directory.GetFiles(folder, "*", SearchOption.AllDirectories))
+            ConsoleHelper.Rewrite("Renaming file contents... [0]");
+            int i = 0;
+            foreach (var file in files)
             {
-                if (!gitIgnoreTracker.IsFileIgnored(file))
+                var contents = File.ReadAllText(file);
+                var newContent = contents;
+                for (int findStringIndex = 0; findStringIndex < findStrings.Length; findStringIndex++)
                 {
-                    var contents = File.ReadAllText(file);
-                    var newContent = contents.Replace(oldFileName, newFileName);
-                    if (contents != newContent)
-                    {
-                        File.WriteAllText(file, newContent);
-                    }
+                    newContent = newContent.Replace(findStrings[findStringIndex], replaceStrings[findStringIndex]);
+                }
+                if (contents != newContent)
+                {
+                    File.WriteAllText(file, newContent);
+                    ConsoleHelper.Rewrite(7, "Renaming file contents... [{0}]", ++i);
                 }
             }
+            ConsoleHelper.Rewrite("Renaming file contents... [{0}]\n", i);
         }
     }
 }

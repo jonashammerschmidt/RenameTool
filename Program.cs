@@ -5,7 +5,7 @@ namespace RenameTool
 {
     public class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             if (args.Length < 2)
             {
@@ -14,26 +14,115 @@ namespace RenameTool
             }
 
             string folder = Directory.GetCurrentDirectory();
-            string oldFileName = args[0];
-            string newFileName = args[1];
+            string findString = args[0];
+            string replaceString = args[1];
+
+            string[] findStrings = new string[] { findString.ToPascalCase(), findString.ToCamelCase(), findString.ToKebabCase() };
+            string[] replaceStrings = new string[] { replaceString.ToPascalCase(), replaceString.ToCamelCase(), replaceString.ToKebabCase() };
 
             if (ArgumentParser.HasArgument(args, "-c", "--custom"))
             {
-                Rename(folder, oldFileName, newFileName);
+                findStrings = new string[] { findString };
+                replaceStrings = new string[] { replaceString };
             }
-            else
-            {
-                Rename(folder, oldFileName.ToPascalCase(), newFileName.ToPascalCase());
-                Rename(folder, oldFileName.ToCamelCase(), newFileName.ToCamelCase());
-                Rename(folder, oldFileName.ToKebabCase(), newFileName.ToKebabCase());
-            }
+
+            Raname(folder, findStrings, replaceStrings);
         }
 
-        private static void Rename(string folder, string oldFileName, string newFileName)
+        private static void Raname(string directory, string[] findStrings, string[] replaceStrings)
         {
+            Console.WriteLine("Prepare rename...");
             var gitIgnoreTracker = new GitIgnoreTracker();
-            FileContentRenamer.Rename(folder, oldFileName, newFileName, gitIgnoreTracker);
-            DirectoryAndFileRenamer.Rename(folder, oldFileName, newFileName, gitIgnoreTracker);
+
+            FindAllFilesExcept(
+                directory,
+                findStrings,
+                gitIgnoreTracker,
+                out List<string> foundFiles,
+                out List<string> foundFilteredFiles,
+                out List<string> foundFilteredDirectories);
+
+            FileContentRenamer.Rename(foundFiles.ToArray(), findStrings, replaceStrings);
+
+            Console.WriteLine("Renaming files... [{0}]", foundFilteredFiles.Count);
+            foreach (var foundFile in foundFilteredFiles)
+            {
+                FileRenamer.Rename(foundFile, findStrings, replaceStrings);
+            }
+
+            Console.WriteLine("Renaming directories... [{0}]", foundFilteredDirectories.Count);
+            for (int i = 0; i < foundFilteredDirectories.Count; i++)
+            {
+                string oldDirectoryName = foundFilteredDirectories[i];
+                string? newDirectoryName = DirectoryRenamer.Rename(oldDirectoryName, findStrings, replaceStrings);
+                if (newDirectoryName is not null)
+                {
+                    foundFilteredDirectories = foundFilteredDirectories
+                        .Select(dir => dir.Replace(oldDirectoryName, newDirectoryName))
+                        .ToList();
+                }
+            }
+
+            Console.WriteLine("Done.");
+        }
+
+        private static void FindAllFilesExcept(
+            string rootDirectory,
+            string[] findStrings,
+            GitIgnoreTracker gitIgnoreTracker,
+            out List<string> foundFiles,
+            out List<string> foundFilteredFiles,
+            out List<string> foundFilteredDirectories)
+        {
+            var pathsToSearch = new Queue<string>();
+            foundFiles = new List<string>();
+            foundFilteredFiles = new List<string>();
+            foundFilteredDirectories = new List<string>();
+
+            pathsToSearch.Enqueue(rootDirectory);
+
+            int scannedDirectories = 0;
+            while (pathsToSearch.Count > 0)
+            {
+                var currentDirectory = pathsToSearch.Dequeue();
+
+                try
+                {
+                    var files = Directory.GetFiles(currentDirectory);
+                    foreach (var file in Directory.GetFiles(currentDirectory))
+                    {
+                        if (!gitIgnoreTracker.IsFileIgnored(file))
+                        {
+                            FileInfo fileInfo = new FileInfo(file);
+                            if (findStrings.Any(s => fileInfo.Name.Contains(s)))
+                            {
+                                foundFilteredFiles.Add(file);
+                            }
+                            foundFiles.Add(file);
+                        }
+                    }
+
+                    foreach (var directory in Directory.GetDirectories(currentDirectory))
+                    {
+                        if (!gitIgnoreTracker.IsDirectoryIgnored(directory))
+                        {
+                            DirectoryInfo directoryInfo = new DirectoryInfo(directory);
+                            if (findStrings.Any(s => directoryInfo.Name.Contains(s)))
+                            {
+                                foundFilteredDirectories.Add(directory);
+                            }
+                            pathsToSearch.Enqueue(directory);
+                            scannedDirectories++;
+                            ConsoleHelper.Rewrite(77, "Scanning directory... [{0}]", scannedDirectories);
+                        }
+                    }
+                }
+                catch (Exception) { }
+            }
+
+            foundFilteredFiles.Sort((f1, f2) => f1.CompareTo(f2));
+            foundFilteredDirectories.Sort((d1, d2) => d1.CompareTo(d2));
+            ConsoleHelper.Rewrite("Scanning directory... [{0}]\n", scannedDirectories);
         }
     }
 }

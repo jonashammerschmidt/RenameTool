@@ -11,5 +11,5 @@ dotnet tool install -g RenameTool
 ## Usage
 
 ```
-RenameTool <search> <replace>
+RenameTool <search> <replace> [-c|--custom]
 ```
