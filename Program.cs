@@ -16,9 +16,25 @@ namespace RenameTool
             string folder = Directory.GetCurrentDirectory();
             string findString = args[0];
             string replaceString = args[1];
+            
+            string[] findStrings;
+            string[] replaceStrings;
+            if (findString.ToCamelCase() == findString.ToKebabCase())
+            {
+                findStrings = new string[] { findString.ToPascalCase(), findString.ToCamelCase() };
+                replaceStrings = new string[] { replaceString.ToPascalCase(), replaceString.ToCamelCase() };
+            }
+            else
+            {
+                findStrings = new string[] { findString.ToPascalCase(), findString.ToCamelCase(), findString.ToKebabCase() };
+                replaceStrings = new string[] { replaceString.ToPascalCase(), replaceString.ToCamelCase(), replaceString.ToKebabCase() };
+            }
 
-            string[] findStrings = new string[] { findString.ToPascalCase(), findString.ToCamelCase(), findString.ToKebabCase() };
-            string[] replaceStrings = new string[] { replaceString.ToPascalCase(), replaceString.ToCamelCase(), replaceString.ToKebabCase() };
+            Console.WriteLine("Prepare rename for:");
+            for (int i = 0; i < findStrings.Length; i++)
+            {
+                Console.WriteLine($" - {findStrings[i]}  ->  {replaceStrings[i]}");
+            }
 
             if (ArgumentParser.HasArgument(args, "-c", "--custom"))
             {
@@ -31,7 +47,6 @@ namespace RenameTool
 
         private static void Raname(string directory, string[] findStrings, string[] replaceStrings)
         {
-            Console.WriteLine("Prepare rename...");
             var gitIgnoreTracker = new GitIgnoreTracker();
 
             FindAllFilesExcept(
