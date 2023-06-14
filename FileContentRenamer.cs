@@ -1,10 +1,11 @@
 using RenameTool.Tools;
+using System.Text.RegularExpressions;
 
 namespace RenameTool
 {
     public static class FileContentRenamer
     {
-        public static void Rename(string[] files, string[] findStrings, string[] replaceStrings)
+        public static void Rename(string[] files, string[] findStrings, string[] replaceStrings, bool useRegex)
         {
             ConsoleHelper.Rewrite("Renaming file contents... [0]");
             int i = 0;
@@ -14,7 +15,14 @@ namespace RenameTool
                 var newContent = contents;
                 for (int findStringIndex = 0; findStringIndex < findStrings.Length; findStringIndex++)
                 {
-                    newContent = newContent.Replace(findStrings[findStringIndex], replaceStrings[findStringIndex]);
+                    if (useRegex)
+                    {
+                        newContent = Regex.Replace(newContent, findStrings[findStringIndex], replaceStrings[findStringIndex]);
+                    }
+                    else 
+                    {
+                        newContent = newContent.Replace(findStrings[findStringIndex], replaceStrings[findStringIndex]);
+                    }
                 }
                 if (contents != newContent)
                 {

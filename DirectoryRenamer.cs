@@ -1,8 +1,10 @@
+using System.Text.RegularExpressions;
+
 namespace RenameTool
 {
     public static class DirectoryRenamer
     {
-        public static string? Rename(string directoryPath, string[] findStrings, string[] replaceStrings)
+        public static string? Rename(string directoryPath, string[] findStrings, string[] replaceStrings, bool useRegex)
         {
             var directory = new DirectoryInfo(directoryPath);
 
@@ -10,7 +12,14 @@ namespace RenameTool
             var newName = currentName;
             for (int findStringIndex = 0; findStringIndex < findStrings.Length; findStringIndex++)
             {
-                newName = newName.Replace(findStrings[findStringIndex], replaceStrings[findStringIndex]);
+                if (useRegex)
+                {
+                    newName = Regex.Replace(newName, findStrings[findStringIndex], replaceStrings[findStringIndex]);
+                }
+                else
+                {
+                    newName = newName.Replace(findStrings[findStringIndex], replaceStrings[findStringIndex]);
+                }
             }
 
             if (currentName != newName && directory.Parent is not null)

@@ -1,5 +1,6 @@
 ﻿using CaseExtensions;
 using RenameTool.Tools;
+using System.Text.RegularExpressions;
 
 namespace RenameTool
 {
@@ -30,22 +31,30 @@ namespace RenameTool
                 replaceStrings = new string[] { replaceString.ToPascalCase(), replaceString.ToCamelCase(), replaceString.ToKebabCase() };
             }
 
-            Console.WriteLine("Prepare rename for:");
-            for (int i = 0; i < findStrings.Length; i++)
-            {
-                Console.WriteLine($" - {findStrings[i]}  ->  {replaceStrings[i]}");
-            }
-
             if (ArgumentParser.HasArgument(args, "-c", "--custom"))
             {
                 findStrings = new string[] { findString };
                 replaceStrings = new string[] { replaceString };
             }
 
-            Raname(folder, findStrings, replaceStrings);
+            bool useRegex = false;
+            if (ArgumentParser.HasArgument(args, "-r", "--regex"))
+            {
+                findStrings = new string[] { findString };
+                replaceStrings = new string[] { replaceString };
+                useRegex = true;
+            }
+
+            Console.WriteLine("Prepare rename for:");
+            for (int i = 0; i < findStrings.Length; i++)
+            {
+                Console.WriteLine($" - {findStrings[i]}  ->  {replaceStrings[i]}");
+            }
+
+            Raname(folder, findStrings, replaceStrings, useRegex);
         }
 
-        private static void Raname(string directory, string[] findStrings, string[] replaceStrings)
+        private static void Raname(string directory, string[] findStrings, string[] replaceStrings, bool useRegex)
         {
             var gitIgnoreTracker = new GitIgnoreTracker();
 
@@ -55,25 +64,36 @@ namespace RenameTool
                 gitIgnoreTracker,
                 out List<string> foundFiles,
                 out List<string> foundFilteredFiles,
-                out List<string> foundFilteredDirectories);
+                out List<string> foundFilteredDirectories,
+                useRegex);
 
-            FileContentRenamer.Rename(foundFiles.ToArray(), findStrings, replaceStrings);
+            FileContentRenamer.Rename(foundFiles.ToArray(), findStrings, replaceStrings, useRegex);
 
             Console.WriteLine("Renaming files... [{0}]", foundFilteredFiles.Count);
             foreach (var foundFile in foundFilteredFiles)
             {
-                FileRenamer.Rename(foundFile, findStrings, replaceStrings);
+                FileRenamer.Rename(foundFile, findStrings, replaceStrings, useRegex);
             }
 
             Console.WriteLine("Renaming directories... [{0}]", foundFilteredDirectories.Count);
             for (int i = 0; i < foundFilteredDirectories.Count; i++)
             {
                 string oldDirectoryName = foundFilteredDirectories[i];
-                string? newDirectoryName = DirectoryRenamer.Rename(oldDirectoryName, findStrings, replaceStrings);
+                string? newDirectoryName = DirectoryRenamer.Rename(oldDirectoryName, findStrings, replaceStrings, useRegex);
                 if (newDirectoryName is not null)
                 {
                     foundFilteredDirectories = foundFilteredDirectories
-                        .Select(dir => dir.Replace(oldDirectoryName, newDirectoryName))
+                        .Select(dir =>
+                        {
+                            if (useRegex)
+                            {
+                                return Regex.Replace(dir, oldDirectoryName, newDirectoryName);
+                            }
+                            else 
+                            {
+                                return dir.Replace(oldDirectoryName, newDirectoryName);
+                            }
+                        })
                         .ToList();
                 }
             }
@@ -87,7 +107,8 @@ namespace RenameTool
             GitIgnoreTracker gitIgnoreTracker,
             out List<string> foundFiles,
             out List<string> foundFilteredFiles,
-            out List<string> foundFilteredDirectories)
+            out List<string> foundFilteredDirectories,
+            bool useRegex)
         {
             var pathsToSearch = new Queue<string>();
             foundFiles = new List<string>();
@@ -109,7 +130,17 @@ namespace RenameTool
                         if (!gitIgnoreTracker.IsFileIgnored(file))
                         {
                             FileInfo fileInfo = new FileInfo(file);
-                            if (findStrings.Any(s => fileInfo.Name.Contains(s)))
+                            if (findStrings.Any(findString =>
+                            {
+                                if (useRegex)
+                                {
+                                    return Regex.IsMatch(fileInfo.Name, findString);
+                                }
+                                else
+                                {
+                                    return fileInfo.Name.Contains(findString);
+                                }
+                            }))
                             {
                                 foundFilteredFiles.Add(file);
                             }

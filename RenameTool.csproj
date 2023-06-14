@@ -3,7 +3,7 @@
   <PropertyGroup>
     <PackageId>RenameTool</PackageId>
     <Title>RenameTool</Title>
-    <Version>1.0.5</Version>
+    <Version>1.0.6</Version>
     <Summary>DotNet Tool for recursively renaming directories, files and file contents in PascalCase, camelCase and kebab-case.</Summary>
     <Description>DotNet Tool for recursively renaming directories, files and file contents in PascalCase, camelCase and kebab-case.</Description>
     <Authors>Jonas Hammerschmidt</Authors>
