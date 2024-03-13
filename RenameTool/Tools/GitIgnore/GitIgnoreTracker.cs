@@ -36,7 +36,7 @@ namespace RenameTool.Tools
 
         private void SetupInitialIgnoreLists()
         {
-            string currentFolder = Directory.GetCurrentDirectory();
+            string currentFolder = Program.CurrentDirectory;
             while (Directory.GetParent(currentFolder) != null)
             {
                 if (Directory.GetFiles(currentFolder)
@@ -57,7 +57,7 @@ namespace RenameTool.Tools
 
         private void IncludeGitIgnoresFromSubFoldersIgnoreList()
         {
-            var directoryPath = Directory.GetCurrentDirectory();
+            var directoryPath = Program.CurrentDirectory;
             this.IncludeGitIgnoresFromSubFoldersIgnoreListRek(directoryPath);
         }
 

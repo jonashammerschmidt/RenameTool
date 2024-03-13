@@ -6,7 +6,9 @@ namespace RenameTool
 {
     public class Program
     {
-        private static void Main(string[] args)
+        public static string CurrentDirectory = Directory.GetCurrentDirectory();
+
+        public static void Main(string[] args)
         {
             if (args.Length < 2)
             {
@@ -14,10 +16,9 @@ namespace RenameTool
                 return;
             }
 
-            string folder = Directory.GetCurrentDirectory();
             string findString = args[0];
             string replaceString = args[1];
-            
+
             string[] findStrings;
             string[] replaceStrings;
             if (findString.ToCamelCase() == findString.ToKebabCase())
@@ -51,7 +52,7 @@ namespace RenameTool
                 Console.WriteLine($" - {findStrings[i]}  ->  {replaceStrings[i]}");
             }
 
-            Raname(folder, findStrings, replaceStrings, useRegex);
+            Raname(CurrentDirectory, findStrings, replaceStrings, useRegex);
         }
 
         private static void Raname(string directory, string[] findStrings, string[] replaceStrings, bool useRegex)
@@ -89,7 +90,7 @@ namespace RenameTool
                             {
                                 return Regex.Replace(dir, oldDirectoryName, newDirectoryName);
                             }
-                            else 
+                            else
                             {
                                 return dir.Replace(oldDirectoryName, newDirectoryName);
                             }
@@ -124,26 +125,26 @@ namespace RenameTool
 
                 try
                 {
-                    var files = Directory.GetFiles(currentDirectory);
                     foreach (var file in Directory.GetFiles(currentDirectory))
                     {
                         if (!gitIgnoreTracker.IsFileIgnored(file))
                         {
                             FileInfo fileInfo = new FileInfo(file);
                             if (findStrings.Any(findString =>
-                            {
-                                if (useRegex)
                                 {
-                                    return Regex.IsMatch(fileInfo.Name, findString);
-                                }
-                                else
-                                {
-                                    return fileInfo.Name.Contains(findString);
-                                }
-                            }))
+                                    if (useRegex)
+                                    {
+                                        return Regex.IsMatch(fileInfo.Name, findString);
+                                    }
+                                    else
+                                    {
+                                        return fileInfo.Name.Contains(findString);
+                                    }
+                                }))
                             {
                                 foundFilteredFiles.Add(file);
                             }
+
                             foundFiles.Add(file);
                         }
                     }
@@ -153,17 +154,31 @@ namespace RenameTool
                         if (!gitIgnoreTracker.IsDirectoryIgnored(directory))
                         {
                             DirectoryInfo directoryInfo = new DirectoryInfo(directory);
-                            if (findStrings.Any(s => directoryInfo.Name.Contains(s)))
+                            if (findStrings.Any(findString =>
+                                {
+                                    if (useRegex)
+                                    {
+                                        return Regex.IsMatch(directoryInfo.Name, findString);
+                                    }
+                                    else
+                                    {
+                                        return directoryInfo.Name.Contains(findString);
+                                    }
+                                }))
                             {
                                 foundFilteredDirectories.Add(directory);
                             }
+
                             pathsToSearch.Enqueue(directory);
                             scannedDirectories++;
                             ConsoleHelper.Rewrite(77, "Scanning directory... [{0}]", scannedDirectories);
                         }
                     }
                 }
-                catch (Exception) { }
+                catch (Exception)
+                {
+                    /* Handle exceptions as needed */
+                }
             }
 
             foundFilteredFiles.Sort((f1, f2) => f1.CompareTo(f2));
